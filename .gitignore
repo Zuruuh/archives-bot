@@ -1,3 +1,12 @@
+# Project dependencies
 /node_modules/
+
+# Builded files
 /dist/
+
+# Temporary files
 /var/
+
+# App secrets
+.env.local
+.env.*.local
