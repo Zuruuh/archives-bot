@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
@@ -7,4 +8,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'prettier',
   ],
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'off',
+  },
 };
