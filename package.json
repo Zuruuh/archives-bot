@@ -1,0 +1,14 @@
+{
+  "name": "archives-bot",
+  "version": "0.2.0",
+  "main": "dist/index.js",
+  "author": "Younès Ziadi <ziadi.mail.pro@gmail.com>",
+  "license": "MIT",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^17.0.16",
+    "nodemon": "^2.0.15",
+    "typescript": "^4.5.5"
+  }
+}
