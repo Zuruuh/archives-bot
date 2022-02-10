@@ -37,7 +37,7 @@ export class CommandHandler implements IHandler {
 
   public static async isCommand(
     message: Message
-  ): Promise<CommandValidatorResponse> {
+  ): Promise<CommandValidation<true, ICommand>> {
     const { content } = message;
     const [userCmd] = content.split(' ');
     // TODO: Use guild prefix
@@ -53,30 +53,59 @@ export class CommandHandler implements IHandler {
     );
     if (!command) return { state: false };
 
-    return { state: true, command };
+    return { state: true, data: command };
   }
 
   public static async commandCallback(
     callback: ICommand,
     message: Message
-  ): Promise<boolean> {
-    // TODO: Roles/User related validations (e.g: Is Bot, has (?not) role, etc..)
-    if (!message.member || message.author.bot) return false;
-
-    const permissionsValidation = await CommandHandler.isAuthorized(
-      message.member,
-      callback.permissions
-    );
-
-    if (!permissionsValidation.state) {
-      message.reply({ embeds: [permissionsValidation.embed] });
-
-      return false;
-    }
+  ): Promise<void> {
+    if (
+      !CommandHandler.authorizationCallback(message, callback.permissions) ||
+      !CommandHandler.canToRunCommandCallback(message)
+    )
+      return;
 
     // TODO: parse arguments
     const args = message.content.split(' ').slice(1);
     await callback.run<typeof args>(message, args);
+
+    return;
+  }
+
+  private static async canToRunCommandCallback(
+    message: Message
+  ): Promise<boolean> {
+    const allowed = await CommandHandler.canRunCommand(message.member);
+    if (!allowed.state && allowed.data) {
+      await message.reply({ embeds: [allowed.data] });
+    }
+
+    return allowed.state;
+  }
+
+  private static async canRunCommand(
+    author: GuildMember | null
+  ): Promise<CommandValidation<false, MessageEmbed | null>> {
+    // TODO: Roles/User related validations (e.g: Is Bot, has (?not) role, etc..)
+
+    return { state: !!author && !author.user.bot, data: null };
+  }
+
+  private static async authorizationCallback(
+    message: Message,
+    permissions: PermissionString[]
+  ): Promise<boolean> {
+    const permissionsValidation = await CommandHandler.isAuthorized(
+      message.member!, // eslint-disable-line
+      permissions
+    );
+
+    if (!permissionsValidation.state) {
+      message.reply({ embeds: [permissionsValidation.data] });
+
+      return false;
+    }
 
     return true;
   }
@@ -84,7 +113,7 @@ export class CommandHandler implements IHandler {
   private static async isAuthorized(
     author: GuildMember,
     authorizations: PermissionString[]
-  ): Promise<AuthorizationValidatorResponse> {
+  ): Promise<CommandValidation<false, MessageEmbed>> {
     const missing: string[] = [];
 
     authorizations.forEach((auth: PermissionString) => {
@@ -115,7 +144,7 @@ export class CommandHandler implements IHandler {
         ]);
       return {
         state: false,
-        embed,
+        data: embed,
       };
     }
 
@@ -123,10 +152,6 @@ export class CommandHandler implements IHandler {
   }
 }
 
-type CommandValidatorResponse =
-  | { state: false }
-  | { state: true; command: ICommand };
-
-type AuthorizationValidatorResponse =
-  | { state: true }
-  | { state: false; embed: MessageEmbed };
+type CommandValidation<T extends boolean, K> =
+  | { state: T extends true ? false : true }
+  | { state: T; data: K };
