@@ -1,9 +1,10 @@
 import { Client } from 'discord.js';
+import { CommandHandler } from './CommandsHandler';
 import { EventHandler } from './EventHandler';
 
 export class Handlers {
   public static async setup(client: Client) {
-    const handlers = [EventHandler];
+    const handlers = [EventHandler, CommandHandler]; // Must implement IHandler interface
 
     handlers.forEach(async (handler) => await new handler(client).setup());
   }
