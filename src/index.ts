@@ -1,6 +1,6 @@
 import { Client } from 'discord.js';
 import { config as configDotenv } from 'dotenv-flow';
-import { Handlers } from './handler/Handlers';
+import { Handlers } from './handlers/Handlers';
 import { resolve } from 'path';
 
 async function main(): Promise<void> {
