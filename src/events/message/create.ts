@@ -1,5 +1,9 @@
 import { Message } from 'discord.js';
+import { CommandHandler } from '../../handlers/CommandsHandler';
 
-export default async ({ content }: Message) => {
-  console.log('Message envoyé! ', content);
+export default async (message: Message) => {
+  const isCommand = await CommandHandler.isCommand(message);
+  if (isCommand.state) {
+    await CommandHandler.commandCallback(isCommand.command, message);
+  }
 };
